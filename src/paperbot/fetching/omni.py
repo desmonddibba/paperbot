@@ -7,7 +7,7 @@ HEADERS = {
 }
 
 
-BASE_URL = "https://omni.se/"
+
 MORGONSVEPET_URL = "https://omni.se/upptack?sok=viktigaste+nyheterna+p%C3%A5+tre+minute"
 
 
