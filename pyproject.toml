@@ -6,6 +6,6 @@ build-backend = "setuptools.build_meta"
 name = "paperbot"
 version = "0.1.0"
 
-[tools.setuptools.packages.find]
+[tool.setuptools.packages.find]
 where = ["src"]
 

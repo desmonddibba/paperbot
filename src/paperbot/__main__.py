@@ -1,7 +1,13 @@
+import logging
 from .bot.discordbot import run_discordbot
 
+
 def main():
-	print("Bot is running")
+	logging.basicConfig(
+		level=logging.INFO,
+		format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+	)
+	logging.info("Paperbot is starting...")
 	run_discordbot()
 
 
