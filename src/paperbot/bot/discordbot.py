@@ -1,8 +1,12 @@
+import logging
 import discord
 import os
 from dotenv import load_dotenv
 
+logger = logging.getLogger(__name__)
+
 load_dotenv()
+
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 
@@ -12,7 +16,7 @@ client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
-    print(f'{client.user} has connected to Discord!')
+    logger.info('%s has connected to Discord!' % client.user)
 
 @client.event
 async def on_message(message):
@@ -22,5 +26,5 @@ async def on_message(message):
         await message.channel.send("Pong!")
 
 def run_discordbot():
-    client.run(TOKEN)
+    client.run(TOKEN, log_handler=None)
 
