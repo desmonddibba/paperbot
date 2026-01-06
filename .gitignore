@@ -207,3 +207,4 @@ marimo/_lsp/
 __marimo__/
 
 scratch_test.py
+scratch_storage.json
