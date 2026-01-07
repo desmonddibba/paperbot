@@ -1,35 +1,22 @@
 from urllib.parse import urljoin
 from paperbot.models.morgonsvepet import Article, DailyWatch, NewsLink, Morgonsvepet
 from bs4 import BeautifulSoup
-from paperbot.fetching.omni import fetch_html, fetch_latest_post_url
+from paperbot.fetching.omni import fetch_html
 import logging
 from typing import List
 
 logger = logging.getLogger(__name__)
 
-def parse_morning_letter():
-    """
-    Parse the latest "Morgonsvepet" post from Omni.
-    Args:
-        None
-    Returns:
-        Morgonsvepet: The parsed Morgonsvepet object.
-    """
-    url = fetch_latest_post_url()
-    html = fetch_html(url)
-    soup = BeautifulSoup(html, "html.parser")
-
-    return _parse_morning_letter(soup, url)
-
-
-def _parse_morning_letter(soup: BeautifulSoup, url: str) -> Morgonsvepet:
+def parse_morning_letter(url: str) -> Morgonsvepet:
     """Parse the articles section of the morning letter.
     Args:
-        soup (BeautifulSoup): The BeautifulSoup object of the "Morgonsvepet" HTML.
         url (str): The URL of the Morgonsvepet post.
     Returns:
         Morgonsvepet: The parsed Morgonsvepet object.
     """
+    html = fetch_html(url)
+    soup = BeautifulSoup(html, "html.parser")
+
     morgon = Morgonsvepet(
         title=soup.select_one("h1[class*='Title_articleTitle']").get_text(strip=True),
         url=url,
@@ -109,11 +96,11 @@ def _parse_morning_letter(soup: BeautifulSoup, url: str) -> Morgonsvepet:
                 link_el = sibling.find("a", href=True)
                 if link_el:
                     read_more_link = urljoin(url, link_el['href'])
-
-            morgon.articles.append(Article(
-                title=subheading_text,
-                content=content,
-                read_more_link=read_more_link
-            ))
+        
+        morgon.articles.append(Article(
+            title=subheading_text,
+            content=content,
+            read_more_link=read_more_link
+        ))
 
     return morgon
