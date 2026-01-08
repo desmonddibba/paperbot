@@ -7,10 +7,10 @@ from paperbot.models.morgonsvepet import Morgonsvepet
 from paperbot.parser.html_parser import parse_morning_letter
 from paperbot.storage.file_storage import FileStorage
 from paperbot.services.paperbotservice import PaperBotService
-from discord.ext import commands
 
 logger = logging.getLogger(__name__)
-bullet = "•"
+bullet = "◦"
+arrow = "→"
 load_dotenv()
 
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -22,25 +22,45 @@ storage = FileStorage("data/urls.json")
 
 paper_service = PaperBotService(
     storage=storage,
-    fetcher= fetch_latest_post_url,
+    fetcher=fetch_latest_post_url,
     parser=parse_morning_letter
 )
+
+def format_article_content(paragraphs: list[str]) -> str:
+    paragraphs = [p.strip() for p in paragraphs if p.strip()]
+
+    if not paragraphs:
+        return " "
+    
+    if len(paragraphs) == 1:
+        return paragraphs[0]
+
+    mid = len(paragraphs) // 2
+
+    first = " ".join(paragraphs[:mid])
+    second = " ".join(paragraphs[mid:])
+
+    return f"{first}\n\n{second}"
 
 def create_embed(paper: Morgonsvepet) -> discord.Embed:
     embed = discord.Embed(
         title=paper.title,
         url=paper.url,
-        description=f"By {paper.author or 'Unknown'} | Published: {paper.published_date or 'Unknown'}",
-        color=0x1abc9c
+        description=f"\n",
+        color=0x78a295
     )
 
     for article in paper.articles:
-        content = "\n".join(article.content)
+        content = format_article_content(article.content)
 
         if article.read_more_link:
-            content += f"\n[Läs mer]({article.read_more_link})"
+            content += f"\n[{arrow} Läs mer]({article.read_more_link})"
         
-        embed.add_field(name=article.title, value=content or "No content", inline=False)
+        embed.add_field(
+            name=article.title, 
+            value=content or " ", 
+            inline=False
+            )
 
     # Add news links
     for news_link in paper.news_links:
@@ -53,7 +73,12 @@ def create_embed(paper: Morgonsvepet) -> discord.Embed:
         embed.add_field(name=paper.daily_watch.title, value=daily_text, inline=False)
 
     # footer
-    embed.set_footer(text="Morgonsvepet")
+    author = paper.author or "Okänd författare"
+    date = paper.published_date or "Okänt datum"
+
+    embed.set_footer(
+        text=f"{author} — Morgonsvepet {date} "
+    )
 
     return embed
 

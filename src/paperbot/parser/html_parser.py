@@ -35,14 +35,14 @@ def parse_morning_letter(url: str) -> Morgonsvepet:
             paid_article_subheading = None
             continue
 
-        subheading_text = subheading_el.get_text(strip=True).lower()
+        subheading_text = subheading_el.get_text(strip=True)
         
         # Skip the "Till sist" section
-        if subheading_text == "till sist":
+        if subheading_text == "Till sist":
             continue
 
         # Fler nyheter i korthet
-        if subheading_text == "fler nyheter i korthet":
+        if subheading_text == "Fler nyheter i korthet":
             items = {}
             for sibling in subheading_el.find_next_siblings():
                 if sibling.name == "div" and any('InternalArticle' in cls for cls in sibling.get('class', [])):   
@@ -60,7 +60,7 @@ def parse_morning_letter(url: str) -> Morgonsvepet:
             continue
 
         # Håll utkik under dagen
-        if subheading_text == "håll utkik under dagen":
+        if subheading_text == "Håll utkik under dagen":
             li_items = []
             for sibling in subheading_el.find_next_siblings():
 
