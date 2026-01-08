@@ -1,6 +1,7 @@
 import requests, logging
-from urllib.parse import urlparse, urldefrag
+from urllib.parse import urlparse, urldefrag, urljoin
 from bs4 import BeautifulSoup
+from paperbot.storage.file_storage import FileStorage
 
 logger = logging.getLogger(__name__)
 
@@ -9,6 +10,7 @@ HEADERS = {
 }
 
 MORGONSVEPET_URL = "https://omni.se/upptack?sok=viktigaste+nyheterna+p%C3%A5+tre+minuter"
+
 
 def fetch_html(url: str) -> str:
     """" Fetch the HTML of a given URL. """
@@ -31,14 +33,11 @@ def fetch_latest_post_url() -> str | None:
         MORGONSVEPET_URL,
         )
         return None
-
-    # Select the first "Morgonsvepet" link as the latest post
+    
+    # Select latest post
     link_el = links[0]
-    url = urldefrag(link_el.get("href"))[0]
-
-    # Make sure the URL is absolute
-    if url.startswith("/"):
-        parsed = urlparse(MORGONSVEPET_URL)
-        url = f"{parsed.scheme}://{parsed.netloc}{url}"
-
+    url = urldefrag(link_el.get("href"))[0] # Remove fragment
+    url = urljoin(MORGONSVEPET_URL, url)  # Ensure absolute URL
+ 
     return url
+       

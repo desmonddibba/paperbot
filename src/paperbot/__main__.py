@@ -5,7 +5,7 @@ from .bot.discordbot import run_discordbot
 
 def main():
 	logging.basicConfig(
-		level=logging.INFO,
+		level=logging.DEBUG,
 		format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 	)
 	logging.getLogger("discord").setLevel(logging.INFO)

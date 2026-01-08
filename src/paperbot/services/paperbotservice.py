@@ -1,25 +1,33 @@
 from typing import Callable
 from paperbot.models.morgonsvepet import Morgonsvepet
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class PaperBotService:
     def __init__(
         self,
-        repository,
+        storage,
         fetcher: Callable[[], str],
         parser: Callable[[str], Morgonsvepet]
     ):
-        self.repository = repository
+        self.storage = storage
         self.fetcher = fetcher
         self.parser = parser
 
     def mark_seen(self, url: str) -> None:
-        self.repository.mark_seen(url)
+        self.storage.mark_seen(url)
     
     def has_seen(self, url: str) -> bool:
-        return self.repository.has_seen(url)
+        return self.storage.has_seen(url)
     
     def fetch_paper(self) -> Morgonsvepet:
         url = self.fetcher()
-        if not self.has_seen(url):
-            self.mark_seen(url)
+        if self.has_seen(url):
+            logger.info(f"URL already seen: {url}")
+            return None
+        # self.mark_seen(url)
+        logger.info("New URL marked: {url}")
         return self.parser(url)
+
