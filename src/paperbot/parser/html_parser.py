@@ -17,7 +17,6 @@ def parse_morning_letter(url: str) -> Morgonsvepet:
     html = fetch_html(url)
     soup = BeautifulSoup(html, "html.parser")
 
-
     image_url = (
     soup.select_one("figure[class*='Image'] img[src]")["src"]
     if soup.select_one("figure[class*='Image'] img[src]")
@@ -31,8 +30,6 @@ def parse_morning_letter(url: str) -> Morgonsvepet:
         published_date=soup.select_one("time[class*='Timestamp']").get_text(strip=True),
         image_url=image_url
     )
-
-
 
     paid_article_subheading = None
 
