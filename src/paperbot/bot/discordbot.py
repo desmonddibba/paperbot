@@ -47,8 +47,10 @@ def create_embed(paper: Morgonsvepet) -> discord.Embed:
         title=paper.title,
         url=paper.url,
         description=f"\n",
-        color=0x78a295
+        color=0x78a295,
     )
+
+    embed.set_image(url=paper.image_url)
 
     for article in paper.articles:
         content = format_article_content(article.content)

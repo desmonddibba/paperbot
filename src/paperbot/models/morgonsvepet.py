@@ -10,6 +10,7 @@ class Morgonsvepet:
     author: Optional[str] = None
     published_date: Optional[str] = None
     url: Optional[str] = None
+    image_url: Optional[str] = None
 
 @dataclass
 class Article:
