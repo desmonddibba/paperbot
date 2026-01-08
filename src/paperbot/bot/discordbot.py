@@ -1,102 +1,81 @@
+import asyncio
+import datetime
 import logging
 import discord
 import os
+from discord.ext import tasks
 from dotenv import load_dotenv
+from paperbot.bot.embed import create_morgonsvepet_embed
 from paperbot.fetching.omni import fetch_latest_post_url
-from paperbot.models.morgonsvepet import Morgonsvepet
 from paperbot.parser.html_parser import parse_morning_letter
 from paperbot.storage.file_storage import FileStorage
 from paperbot.services.paperbotservice import PaperBotService
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
-bullet = "◦"
-arrow = "→"
+
 load_dotenv()
 
 TOKEN = os.getenv("DISCORD_TOKEN")
+CHANNEL_IDS = [int(cid.strip()) for cid in os.getenv("DISCORD_CHANNEL_IDS").split(",")]
+
 intents = discord.Intents.default()
 intents.message_content = True 
 client = discord.Client(intents=intents)
 
 storage = FileStorage("data/urls.json")
-
 paper_service = PaperBotService(
     storage=storage,
     fetcher=fetch_latest_post_url,
     parser=parse_morning_letter
 )
 
-def format_article_content(paragraphs: list[str]) -> str:
-    paragraphs = [p.strip() for p in paragraphs if p.strip()]
+TIMEZONE = ZoneInfo("Europe/Stockholm")
+RETRY_INTERVAL = 5 # minutes
+TARGET_HOUR = 7 # 07:00
 
-    if not paragraphs:
-        return " "
-    
-    if len(paragraphs) == 1:
-        return paragraphs[0]
-
-    mid = len(paragraphs) // 2
-
-    first = " ".join(paragraphs[:mid])
-    second = " ".join(paragraphs[mid:])
-
-    return f"{first}\n\n{second}"
-
-def create_embed(paper: Morgonsvepet) -> discord.Embed:
-    embed = discord.Embed(
-        title=paper.title,
-        url=paper.url,
-        description=f"\n",
-        color=0x78a295,
-    )
-
-    embed.set_image(url=paper.image_url)
-
-    for article in paper.articles:
-        content = format_article_content(article.content)
-
-        if article.read_more_link:
-            content += f"\n[{arrow} Läs mer]({article.read_more_link})"
+@tasks.loop(minutes=RETRY_INTERVAL)
+async def morning_news_loop():
+    try:
+        paper = paper_service.fetch_paper()
+        if paper is None:
+            logger.info("No new post. Retrying in 10 minutes.")
+            return
         
-        embed.add_field(
-            name=article.title, 
-            value=content or " ", 
-            inline=False
-            )
+        # Post embed to discord
+        embed = create_morgonsvepet_embed(paper)
+        for channel_id in CHANNEL_IDS:
+            channel = client.get_channel(channel_id) or await client.fetch_channel(channel_id)
+            await channel.send(embed=embed)
+            logger.info(f"Posted news: {paper.published_dates} to {channel_id}")
+        morning_news_loop.stop()
 
-    # Add news links
-    for news_link in paper.news_links:
-        links_text = "\n".join(f"{bullet} [{title}]({url})" for title, url in news_link.items.items())
-        if links_text:
-            embed.add_field(name="Fler nyheter i korthet", value=links_text, inline=False)
+    except discord.Forbidden:
+        logger.warning("Missing permission to post in one of the channels")
+    except Exception as e:
+        logger.warning(f"Unexpected error in morning_news_loop: {e}")
 
-    if paper.daily_watch:
-        daily_text = "\n".join(f"{bullet} {item}" for item in paper.daily_watch.items)
-        embed.add_field(name=paper.daily_watch.title, value=daily_text, inline=False)
+@tasks.loop(hours=24)
+async def daily_restart_loop():
+    morning_news_loop.start()
 
-    # footer
-    author = paper.author or "Okänd författare"
-    date = paper.published_date or "Okänt datum"
-
-    embed.set_footer(
-        text=f"{author} — Morgonsvepet {date} "
-    )
-
-    return embed
+@daily_restart_loop.before_loop
+async def before_daily_restart():
+    await client.wait_until_ready()
+    now = datetime.datetime.now(TIMEZONE)
+    target = now.replace(hour=TARGET_HOUR, minute=0, second=0, microsecond=0)
+    if now >= target:
+        target += datetime.timedelta(days=1)
+    await asyncio.sleep((target - now).total_seconds())
 
 @client.event
 async def on_ready():
     logger.info('%s has connected to Discord!' % client.user)
-
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-    if message.content.lower() == 'ping':
-        paper = paper_service.fetch_paper()
-        if paper:
-            embed = create_embed(paper)
-            await message.channel.send(embed=embed)
+    for channel_id in CHANNEL_IDS:
+        channel = client.get_channel(channel_id)
+        logger.info(f"Channel {channel_id}: {channel}")
+    morning_news_loop.start()
+    daily_restart_loop.start()
 
 def run_discordbot():
     client.run(TOKEN, log_handler=None)
