@@ -34,6 +34,5 @@ class PaperBotService:
             return None
             
         self.mark_seen(url)
-        logger.info("New URL marked: {url}")
         return self.parser(url)
 
