@@ -32,7 +32,7 @@ paper_service = PaperBotService(
 
 TIMEZONE = ZoneInfo("Europe/Stockholm")
 RETRY_INTERVAL = 5 # minutes
-TARGET_HOUR = 7 # 07:00
+TARGET_HOUR = 6 # 07:00
 
 @tasks.loop(minutes=RETRY_INTERVAL)
 async def morning_news_loop():
@@ -64,6 +64,7 @@ async def morning_news_loop():
 
 @tasks.loop(hours=24)
 async def daily_restart_loop():
+    logger.info("morning_news_loop starting")
     morning_news_loop.start()
 
 @daily_restart_loop.before_loop
@@ -82,7 +83,6 @@ async def on_ready():
     for channel_id in CHANNEL_IDS:
         channel = client.get_channel(channel_id)
         logger.info(f"Channel {channel_id}: {channel}")
-    morning_news_loop.start()
     daily_restart_loop.start()
 
 def run_discordbot():
