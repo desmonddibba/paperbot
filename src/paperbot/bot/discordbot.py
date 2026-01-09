@@ -39,7 +39,7 @@ async def morning_news_loop():
     try:
         paper = paper_service.fetch_paper()
         if paper is None:
-            logger.info("No new post. Retrying in 10 minutes.")
+            logger.info(f"No new post. Retrying in {RETRY_INTERVAL} minutes.")
             return
         
         # Post embed to discord
@@ -47,7 +47,6 @@ async def morning_news_loop():
         for channel_id in CHANNEL_IDS:
             channel = client.get_channel(channel_id) or await client.fetch_channel(channel_id)
             await channel.send(embed=embed)
-            logger.info(f"Posted news: Morgonsvepet {paper.published_date} to channel {channel_id}")
         morning_news_loop.stop()
 
     except discord.Forbidden:
