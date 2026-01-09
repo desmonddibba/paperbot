@@ -46,7 +46,14 @@ async def morning_news_loop():
         embed = create_morgonsvepet_embed(paper)
         for channel_id in CHANNEL_IDS:
             channel = client.get_channel(channel_id) or await client.fetch_channel(channel_id)
-            await channel.send(embed=embed)
+            logger.info(f"Attempting to send embed to channel {channel_id} ({channel})")
+            try:
+                await channel.send(embed=embed)
+                logger.info(f"Posted successfully to {channel.name}")
+            except discord.Forbidden:
+                logger.warning(f"Missing permission in channel {channel.name}")
+            except Exception as e:
+                logger.error(f"Failed to send to channel {channel.name}: {e}")
         
         morning_news_loop.stop()
 
