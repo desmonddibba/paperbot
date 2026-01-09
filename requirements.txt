@@ -9,7 +9,7 @@ discord.py==2.6.4
 frozenlist==1.8.0
 idna==3.11
 multidict==6.7.0
--e git+ssh://git@github.com/desmonddibba/paperbot.git@870f10a9aa17be38b5df9ea032db263f2a09f79a#egg=paperbot
+-e git+https://github.com/desmonddibba/paperbot.git@870f10a9aa17be38b5df9ea032db263f2a09f79a#egg=paperbot
 propcache==0.4.1
 python-dotenv==1.2.1
 requests==2.32.5
