@@ -47,6 +47,7 @@ async def morning_news_loop():
         for channel_id in CHANNEL_IDS:
             channel = client.get_channel(channel_id) or await client.fetch_channel(channel_id)
             await channel.send(embed=embed)
+        
         morning_news_loop.stop()
 
     except discord.Forbidden:

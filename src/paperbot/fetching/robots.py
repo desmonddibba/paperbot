@@ -10,7 +10,6 @@ class RobotsChecker:
             Checks robots.txt to see if the URL can be fetched.
 
         """
-
         parsed = urlparse(url)
         base_url = f"{parsed.scheme}://{parsed.netloc}"
 
