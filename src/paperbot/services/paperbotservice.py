@@ -1,9 +1,9 @@
 from typing import Callable
+from paperbot.fetching.robots import RobotsChecker
 from paperbot.models.morgonsvepet import Morgonsvepet
 import logging
 
 logger = logging.getLogger(__name__)
-
 
 class PaperBotService:
     def __init__(
@@ -24,10 +24,16 @@ class PaperBotService:
     
     def fetch_paper(self) -> Morgonsvepet:
         url = self.fetcher()
+
+        if not RobotsChecker.can_fetch(url):
+            logger.warning(f"Skipping {url}: disallowed by robots.txt")
+            return None
+
         if self.has_seen(url):
             logger.info(f"URL already seen: {url}")
             return None
-        # self.mark_seen(url)
+            
+        self.mark_seen(url)
         logger.info("New URL marked: {url}")
         return self.parser(url)
 
