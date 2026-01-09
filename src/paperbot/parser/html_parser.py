@@ -64,7 +64,7 @@ def parse_morning_letter(url: str) -> Morgonsvepet:
                     logger.debug(f"Found paid article subheading: {paid_article_subheading}")
                     break
 
-            morgon.news_links.append(NewsLink(items=items))
+            morgon.news_links.append(NewsLink(title=subheading_text, items=items))
             continue
 
         # Håll utkik under dagen

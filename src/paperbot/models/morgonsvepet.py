@@ -20,6 +20,7 @@ class Article:
 
 @dataclass
 class NewsLink:
+    title: str
     items: Dict[str, str] = field(default_factory=dict)
 
 @dataclass

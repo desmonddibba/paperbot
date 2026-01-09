@@ -22,7 +22,7 @@ def create_morgonsvepet_embed(paper: Morgonsvepet) -> discord.Embed:
     embed = discord.Embed(
         title=paper.title,
         url=paper.url,
-        description=f"\n",
+        description=f"\n\n",
         color=0x78a295,
     )
 
@@ -44,7 +44,7 @@ def create_morgonsvepet_embed(paper: Morgonsvepet) -> discord.Embed:
     for news_link in paper.news_links:
         links_text = "\n".join(f"{bullet} [{title}]({url})" for title, url in news_link.items.items())
         if links_text:
-            embed.add_field(name="Fler nyheter i korthet", value=links_text, inline=False)
+            embed.add_field(name=news_link.title, value=links_text, inline=False)
 
     if paper.daily_watch:
         daily_text = "\n".join(f"{bullet} {item}" for item in paper.daily_watch.items)

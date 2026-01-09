@@ -47,7 +47,7 @@ async def morning_news_loop():
         for channel_id in CHANNEL_IDS:
             channel = client.get_channel(channel_id) or await client.fetch_channel(channel_id)
             await channel.send(embed=embed)
-            logger.info(f"Posted news: {paper.published_dates} to {channel_id}")
+            logger.info(f"Posted news: Morgonsvepet {paper.published_date} to channel {channel_id}")
         morning_news_loop.stop()
 
     except discord.Forbidden:
@@ -66,6 +66,7 @@ async def before_daily_restart():
     target = now.replace(hour=TARGET_HOUR, minute=0, second=0, microsecond=0)
     if now >= target:
         target += datetime.timedelta(days=1)
+        logger.info(f"Sleeping until {target}")
     await asyncio.sleep((target - now).total_seconds())
 
 @client.event

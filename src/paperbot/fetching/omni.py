@@ -1,7 +1,6 @@
 import requests, logging
-from urllib.parse import urlparse, urldefrag, urljoin
+from urllib.parse import urldefrag, urljoin
 from bs4 import BeautifulSoup
-from paperbot.storage.file_storage import FileStorage
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +9,6 @@ HEADERS = {
 }
 
 MORGONSVEPET_URL = "https://omni.se/upptack?sok=viktigaste+nyheterna+p%C3%A5+tre+minuter"
-
 
 def fetch_html(url: str) -> str:
     """" Fetch the HTML of a given URL. """
